@@ -1,0 +1,60 @@
+# Xcode
+*.xcworkspace/
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Derived data and build
+DerivedData/
+build/
+*.moved-aside
+
+# Personal Xcode data
+*.swp
+*.mode1v3
+*.mode2v3
+*.pbxuser
+*.perspectivev3
+
+# SwiftPM
+/.swiftpm/xcode/package.xcworkspace/
+/Packages/
+/Package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/
+Carthage.checkouts
+Carthage.build
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Archives
+*.xcarchive
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Simulator logs
+*.log
+
+# Sonstiges
+*.DS_Store
+
+# Playground
+timeline.xctimeline
+playground.xcworkspace
+
+# Xcode previews cache
+*.xcpreview/
+
+# SwiftUI previews
+.swiftpm/
