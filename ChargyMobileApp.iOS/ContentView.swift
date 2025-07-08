@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  ChargyApp
+//  ChargyMobileApp.iOS
 //
 //  Created by Achim Friedland on 07.07.25.
 //

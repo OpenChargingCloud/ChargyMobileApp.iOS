@@ -1,6 +1,6 @@
 //
 //  ChargingSessionsViewModel.swift
-//  ChargyApp
+//  ChargyMobileApp.iOS
 //
 //  Created by Achim Friedland on 07.07.25.
 //
@@ -13,7 +13,7 @@ class ChargingSessionsViewModel: ObservableObject {
     @Published var sessions: [ChargingSession] = []
     @Published var errorMessage: String?
     
-    func parseSessions(from data: Data) throws -> ChargingSessions {
+    func parseSessions(from data: Data) throws -> ChargeTransparencyRecord {
 
         let json = try JSONSerialization.jsonObject(with: data, options: [])
 
@@ -37,9 +37,10 @@ class ChargingSessionsViewModel: ObservableObject {
                 throw NSError(domain: "ChargingSessionsViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON format"])
             }
 
-        return ChargingSessions(
-            title: "All charging sessions",
-            chargingSessions: sessionArray
+        return ChargeTransparencyRecord(
+            id:                 "1",
+            description:        I18NString(values: ["en": "All charging sessions"]),
+            chargingSessions:   sessionArray
         )
         
     }
@@ -102,7 +103,7 @@ class ChargingSessionsViewModel: ObservableObject {
     
     
     
-    func validateChargingSessions(_ chargingSessions: ChargingSessions) {
+    func validateChargingSessions(_ chargingSessions: ChargeTransparencyRecord) {
         for session in chargingSessions.chargingSessions {
             if session.validation == nil {
                 session.validation = validateChargingSession(session)
