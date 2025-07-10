@@ -11,7 +11,7 @@ import SwiftUI
 struct ChargyMobileApp_iOSApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            StartView()
         }
     }
 }

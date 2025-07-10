@@ -20,6 +20,12 @@ struct I18NString: Codable {
         self.values = values
     }
     
+    init(language: String,
+         value:    String)
+    {
+        values[language] = value
+    }    
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(values)
