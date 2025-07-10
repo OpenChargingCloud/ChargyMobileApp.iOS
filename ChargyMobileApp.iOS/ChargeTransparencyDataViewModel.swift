@@ -9,8 +9,9 @@ import Foundation
 import SwiftUI
 import CryptoKit
 
-class ChargingSessionsViewModel: ObservableObject {
-    @Published var sessions: [ChargingSession] = []
+class ChargeTransparencyDataViewModel: ObservableObject {
+    @Published var description:  I18NString?
+    @Published var sessions:     [ChargingSession] = []
     @Published var errorMessage: String?
     
     func parseSessions(from data: Data) throws -> ChargeTransparencyRecord {
@@ -18,23 +19,23 @@ class ChargingSessionsViewModel: ObservableObject {
         let json = try JSONSerialization.jsonObject(with: data, options: [])
 
             let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
             var sessionArray: [ChargingSession] = []
 
             if let array = json as? [[String: Any]] {
                 for dict in array {
                     let singleData = try JSONSerialization.data(withJSONObject: dict, options: [])
                     let session    = try decoder.decode(ChargingSession.self, from: singleData)
-                    // Speichere das Original-JSON als String
-                    session.originalJSONString = String(data: singleData, encoding: .utf8)
+                    session.originalCTR = String(data: singleData, encoding: .utf8)
                     sessionArray.append(session)
                 }
             } else if let dict = json as? [String: Any] {
                 let singleData = try JSONSerialization.data(withJSONObject: dict, options: [])
-                let session = try decoder.decode(ChargingSession.self, from: singleData)
-                session.originalJSONString = String(data: singleData, encoding: .utf8)
+                let session    = try decoder.decode(ChargingSession.self, from: singleData)
+                session.originalCTR = String(data: singleData, encoding: .utf8)
                 sessionArray.append(session)
             } else {
-                throw NSError(domain: "ChargingSessionsViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON format"])
+                throw NSError(domain: "ChargeTransparencyDataViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid CTR format"])
             }
 
         return ChargeTransparencyRecord(
@@ -55,7 +56,7 @@ class ChargingSessionsViewModel: ObservableObject {
 
     func validateChargingSession(_ session: ChargingSession) -> ValidationState {
 
-        guard let originalJSONString = session.originalJSONString,
+        guard let originalJSONString = session.originalCTR,
               let originalData = originalJSONString.data(using: .utf8) else {
             return .error
         }
@@ -118,7 +119,8 @@ class ChargingSessionsViewModel: ObservableObject {
             do {
                 let chargingSessions = try parseSessions(from: data)
                 self.validateChargingSessions(chargingSessions)
-                self.sessions = chargingSessions.chargingSessions
+                self.description  = chargingSessions.description
+                self.sessions     = chargingSessions.chargingSessions
                 self.errorMessage = nil
             } catch {
                 self.errorMessage = "Fehler beim Parsen: \(error)"

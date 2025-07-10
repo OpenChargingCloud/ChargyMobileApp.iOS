@@ -11,6 +11,7 @@ class Connector: Identifiable, Codable {
     
     var originalJSONString:  String?
     
-    var id:                  UUID?
+    var type:                String
+    var looses:              Double
     
 }

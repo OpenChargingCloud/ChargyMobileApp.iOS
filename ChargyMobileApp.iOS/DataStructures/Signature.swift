@@ -8,7 +8,9 @@
 import Foundation
 
 class Signature: Codable {
-    var publicKey: String?
-    var signature: String?
-    var validation: ValidationState?
+    
+    var publicKey:    String?
+    var signature:    String?
+    var validation:   ValidationState?
+    
 }

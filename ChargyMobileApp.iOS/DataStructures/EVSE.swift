@@ -9,9 +9,17 @@ import Foundation
 
 class EVSE: Identifiable, Codable {
     
-    var originalJSONString:  String?
+    var originalJSONString:   String?
     
-    var id:                  UUID?
-    var connectors:          [Connector]
-    
+    var id:                   String?
+    var context:              String?
+    var description:          I18NString?
+    var chargingTariffs:      [ChargingTariff]  = []
+    var energyMeters:         [EnergyMeter]     = []
+    var connectors:           [Connector]
+    var publicKeys:           [PublicKey]       = []
+
+    var chargingStation:      ChargingStation?
+    var chargingStationId:    String?
+
 }

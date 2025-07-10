@@ -11,15 +11,24 @@ class EnergyMeter: Identifiable, Codable {
     
     var originalJSONString:  String?
     
-    var id:                  UUID?
-    var manufacturer:        String?
-    var type:                String?
+    var id:                  String
+    var context:             String?
+    var description:         I18NString?
+    var manufacturer:        Manufacturer?
+    var model:               DeviceModel?
     var serialNumber:        String?
     var hardwareVersion:     String?
     var firmwareVersion:     String?
+    var legalCompliance:     LegalCompliance?
+    var signatureFormat:     String?
+    var signatureInfos:      SignatureInfos?
     var publicKey:           String?
-        
-    var signatures:          [Signature]?
-    var validation:          ValidationState?
+
+    var chargingPool:        ChargingPool?
+    var chargingPoolId:      String?
+    var chargingStation:     ChargingStation?
+    var chargingStationId:   String?
+    var EVSE:                EVSE?
+    var EVSEId:              String?
     
 }

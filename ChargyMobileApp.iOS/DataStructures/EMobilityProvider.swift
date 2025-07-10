@@ -9,6 +9,10 @@ import Foundation
 
 class EMobilityProvider: Codable {
     
-    var id:           String
-    
+    var id:                String
+    var context:           String?
+    var description:       I18NString?
+    var chargingTariffs:   [ChargingTariff]  = []
+    var publicKeys:        [PublicKey]       = []
+
 }

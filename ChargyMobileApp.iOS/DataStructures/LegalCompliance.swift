@@ -9,11 +9,10 @@ import Foundation
 
 class LegalCompliance: Codable {
     
-    var url:           String?
-    var freetext:      String?
-    var geoLocation:   GeoLocation?
     var conformity:    [Conformity]?
     var calibration:   [Calibration]?
+    var url:           String?
+    var freetext:      String?
 
 }
 

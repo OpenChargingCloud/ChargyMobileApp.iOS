@@ -9,6 +9,10 @@ import Foundation
 
 class Calibration: Codable {
     
-    var id:           UUID?
+    var certificateId:        String?
+    var url:                  String?
+    var notBefore:            String?
+    var notAfter:             String?
+    var freeText:             String?
     
 }

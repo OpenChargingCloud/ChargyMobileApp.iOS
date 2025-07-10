@@ -9,7 +9,13 @@ import Foundation
 
 class Manufacturer: Codable {
     
-    var name:         String
-    var url:          URL?
-    
+    var context:          String?
+    var name:             String
+    var description:      I18NString?
+    var contact:          Contact?
+    var support:          Support?
+    var privacyContact:   PrivacyContact?
+    var geoLocation:      GeoLocation?
+    var publicKeys:       [PublicKey]?
+
 }

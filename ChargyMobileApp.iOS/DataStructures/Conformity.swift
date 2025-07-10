@@ -9,6 +9,12 @@ import Foundation
 
 class Conformity: Codable {
     
-    var id:           UUID?
+    var certificateId:        String?
+    var url:                  String?
+    var notBefore:            String?
+    var notAfter:             String?
+    var officialSoftware:     [TransparencySoftware]  = []
+    var compatibleSoftware:   [TransparencySoftware]  = []
+    var freeText:             String?
     
 }

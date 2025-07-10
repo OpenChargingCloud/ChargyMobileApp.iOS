@@ -9,6 +9,8 @@ import Foundation
 
 class ChargingTariff: Codable {
     
-    var id:           UUID?
+    var originalJSONString:   String?
+    
+    var id:                   String
     
 }

@@ -10,20 +10,19 @@ import Foundation
 
 class ChargingStationOperator: Codable {
     
-    var id:           String
-    var context:      String?
-    var description:  I18NString?
-//    subCSOIds?:                 Array<string>;
-    var contact:      Contact?
-//    var support:      ISupport?
-//    privacy:                    IPrivacy;
-//    geoLocation?:               IGeoLocation;
-//    chargingPools?:             Array<IChargingPool>;
-//    chargingStations?:          Array<IChargingStation>;
-//    EVSEs?:                     Array<IEVSE>;
-//    publicKeys?:                Array<IPublicKey>;
-//
-//    chargingTariffs?:           Array<IChargingTariff>;
-//    parkingTariffs?:            Array<IParkingTariff>;
-    
+    var id:                  String
+    var context:             String?
+    var description:         I18NString?
+//    subCSOIds?:                      Array<string>;
+    var contact:             Contact?
+    var support:             Support?
+    var privacyContact:      PrivacyContact?;
+    var geoLocation:         GeoLocation;
+    var chargingPools:       [ChargingPool]     = []
+    var chargingStations:    [ChargingStation]  = []
+    var EVSEs:               [EVSE]             = []
+    var chargingTariffs:     [ChargingTariff]   = []
+    var parkingTariffs:      [ParkingTariff]    = []
+    var publicKeys:          [PublicKey]        = []
+
 }
