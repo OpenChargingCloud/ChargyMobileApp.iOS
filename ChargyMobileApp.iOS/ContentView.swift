@@ -49,6 +49,7 @@ struct ContentView: View {
                    .font(.headline)
                    .fontWeight(.bold)
                    .frame(maxWidth: .infinity, alignment: .center)
+                   .padding(.vertical, 8)
                    .background(Color(.lightGray))
             }
 
@@ -86,6 +87,9 @@ struct ContentView: View {
                     
                 }
             }
+            .listStyle(.plain)
+            .frame(maxHeight: .infinity)
+            .layoutPriority(1)
 
         }
         .navigationBarTitle("Ladevorgänge")
