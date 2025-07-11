@@ -150,4 +150,48 @@ class ChargingSession: Identifiable, Codable {
         
     }
     
+    
+    static func parse(from data:     [String: Any],
+                      value:         inout ChargingSession?,
+                      errorResponse: inout String?) -> Bool {
+        
+        var id: String?
+        if !data.parseMandatoryString("id", value: &id, errorResponse: &errorResponse) {
+            return false
+        }
+        
+        var description: I18NString?
+        if data.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+
+        var begin: Date?
+        if !data.parseMandatoryDate("begin", value: &begin, errorResponse: &errorResponse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+        
+        var end: Date?
+        if data.parseOptionalDate("end", value: &end, errorResponse: &errorResponse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+
+        
+        value = ChargingSession(
+                    id:                id!,
+                    begin:             begin!,
+                    end:               end
+//                    description:       description,
+//                    chargingSessions:  sessions
+                )
+        
+        return true
+        
+    }
+    
 }

@@ -87,18 +87,37 @@ class ChargeTransparencyRecord: Codable {
         }
         
         var description: I18NString?
-        guard data.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) else {
-            return false
+        if data.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
         }
+        
+        
                 
 //            let decoder = JSONDecoder()
 //            decoder.dateDecodingStrategy = .iso8601
-            var sessionArray: [ChargingSession] = []
+           // var sessionArray: [ChargingSession] = []
 
+        var sessions: [ChargingSession] = []
+        var error: String?
+        guard data.parseMandatoryArray(
+            "chargingSessions",
+            into:          &sessions,
+            errorResponse: &error,
+            using: { dict, session, err in
+                ChargingSession.parse(from: dict, value: &session, errorResponse: &err)
+            }
+        ) else {
+            errorResponse = error
+            return false
+        }
+        
+        
         value = ChargeTransparencyRecord(
                     id:                id!,
                     description:       description,
-                    chargingSessions:  sessionArray
+                    chargingSessions:  sessions
                 )
         
         return true

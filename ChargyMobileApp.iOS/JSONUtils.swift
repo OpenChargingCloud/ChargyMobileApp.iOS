@@ -6,7 +6,9 @@
 //
 
 import Foundation
-//
+
+public typealias JSON = [String: Any]
+
 //enum JSONUtils {
 //
 //    /// Attempts to extract a non-optional String for the given key.
@@ -38,7 +40,8 @@ import Foundation
 //
 //
 //
-extension Dictionary where Key == String, Value == Any {
+
+extension JSON {
 
     
     /// Attempts to extract a non-optional String for the given key from this dictionary.
@@ -160,8 +163,8 @@ extension Dictionary where Key == String, Value == Any {
     ///   - errorResponse: An inout String? into which an error message is written on failure.
     /// - Returns: False if the key is absent; true if the key exists but the date is invalid.
     func parseOptionalDate(
-        _ key: String,
-        value: inout Date?,
+        _ key:               String,
+        value:         inout Date?,
         errorResponse: inout String?
     ) -> Bool {
         guard let rawAny = self[key] else {
@@ -180,6 +183,48 @@ extension Dictionary where Key == String, Value == Any {
         errorResponse = nil
         return true
     }
+    
+    
+    /// Parses a JSON array under `key` into a typed array using the provided parser.
+    /// - Parameters:
+    ///   - key: The JSON key whose value should be an array of objects.
+    ///   - result: An inout array to receive the parsed elements.
+    ///   - errorResponse: An inout String? to receive an error message on failure.
+    ///   - parser: A function that takes a JSON object, an inout T?, and an inout String?, returning true on successful parse.
+    /// - Returns: True if the array exists and all elements parse successfully; false otherwise.
+    func parseMandatoryArray<T>(
+        _    key:            String,
+        into result:   inout [T],
+        errorResponse: inout String?,
+        using parser: (_ dict: JSON, _ element: inout T?, _ errorResponse: inout String?) -> Bool
+    ) -> Bool {
+        // Ensure the key maps to an array
+        guard let rawArray = self[key] as? [Any] else {
+            errorResponse = "Missing or invalid array for key '\(key)'"
+            return false
+        }
+        var parsedArray: [T] = []
+        for (index, item) in rawArray.enumerated() {
+            guard let dict = item as? JSON else {
+                errorResponse = "Invalid JSON object at array index \(index)"
+                return false
+            }
+            var parsedElement: T?
+            var elementError: String?
+            guard parser(dict, &parsedElement, &elementError) else {
+                errorResponse = "Error parsing element at index \(index): \(elementError ?? "unknown error")"
+                return false
+            }
+            if let element = parsedElement {
+                parsedArray.append(element)
+            }
+        }
+        result = parsedArray
+        errorResponse = nil
+        return true
+    }
+
+    
     
     
 }
