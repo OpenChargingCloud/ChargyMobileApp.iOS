@@ -15,19 +15,19 @@ class ChargeTransparencyRecord: Codable {
     var end:                        Date?
     var description:                I18NString?
     
-    var eMobilityProviders:         [EMobilityProvider]        = []
-    var contracts:                  [Contract]                 = []
+    var eMobilityProviders:         [EMobilityProvider]?
+    var contracts:                  [Contract]?
 
-    var chargingStationOperators:   [ChargingStationOperator]  = []
-    var chargingPools:              [ChargingPool]             = []
-    var chargingStations:           [ChargingStation]          = []
-    var chargingTariffs:            [ChargingTariff]           = []
-    var energyMeters:               [EnergyMeter]              = []
-    var chargingSessions:           [ChargingSession]          = []
+    var chargingStationOperators:   [ChargingStationOperator]?
+    var chargingPools:              [ChargingPool]?
+    var chargingStations:           [ChargingStation]?
+    var chargingTariffs:            [ChargingTariff]?
+    var energyMeters:               [EnergyMeter]?
+    var chargingSessions:           [ChargingSession]?
 
-    var publicKeys:                 [PublicKey]                = []
+    var publicKeys:                 [PublicKey]?
     
-    var signatures:                 [Signature]                = []
+    var signatures:                 [Signature]?
     var validation:                 ValidationState?
 
 //    mediationServices?:         Array<IMediationService>;
@@ -41,21 +41,25 @@ class ChargeTransparencyRecord: Codable {
 //    // hopefully one will be the best matching parser.
 //    certainty:                  number;
 //
-    var warnings:                   [String] = []
-    var errors:                     [String] = []
+    var warnings:                   [String]?
+    var errors:                     [String]?
 //    var status:                     SessionVerificationResult;
     
+    var originalJSON:               String?
+    
         
-    init(id:                String,
-         context:           String?              = nil, //oder [String]
-         begin:             Date?                = nil,
-         end:               Date?                = nil,
-         description:       I18NString?          = nil,
-         chargingSessions:  [ChargingSession]?   = nil,) {
+    init(id:                  String,
+         context:             String?                = nil, //oder [String]
+         begin:               Date?                  = nil,
+         end:                 Date?                  = nil,
+         description:         I18NString?            = nil,
+         eMobilityProviders:  [EMobilityProvider]?   = nil,
+         chargingSessions:    [ChargingSession]?     = nil) {
         
-        self.id                = id
-        self.description       = description
-        self.chargingSessions  = chargingSessions ?? []
+        self.id                  = id
+        self.description         = description
+        self.eMobilityProviders  = eMobilityProviders ?? []
+        self.chargingSessions    = chargingSessions   ?? []
         
     }
     
