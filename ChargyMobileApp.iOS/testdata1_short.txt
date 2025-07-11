@@ -1,6 +1,6 @@
 {
     "id":                "1",
-    "description":       { "en": "All my sessions!" },
+    "description":       { "en": "All my 3 sessions!" },
     "chargingSessions":  [
         {
             "id": "18a7a7f5-1a72-414b-97d1-8b18ffeb9c60",

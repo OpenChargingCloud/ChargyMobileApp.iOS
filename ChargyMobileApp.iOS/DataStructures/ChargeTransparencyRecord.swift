@@ -63,4 +63,68 @@ class ChargeTransparencyRecord: Codable {
         
     }
     
+    /// Throws if the given key is missing or not a String
+    static func parseMandatoryStringold(_ key: String, from data: [String: Any]) throws -> String {
+        guard let value = data[key] as? String else {
+            throw NSError(
+                domain: "ChargeTransparencyRecord",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Missing or invalid '\(key)' field"]
+            )
+        }
+        return value
+    }
+
+
+    
+    static func parse(from data:     [String: Any],
+                      value:         inout ChargeTransparencyRecord?,
+                      errorResponse: inout String?) -> Bool {
+
+        var id: String?
+        if !data.parseMandatoryString("id", value: &id, errorResponse: &errorResponse) {
+            return false
+        }
+        
+        var description: I18NString?
+        guard data.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) else {
+            return false
+        }
+                
+//            let decoder = JSONDecoder()
+//            decoder.dateDecodingStrategy = .iso8601
+            var sessionArray: [ChargingSession] = []
+
+        value = ChargeTransparencyRecord(
+                    id:                id!,
+                    description:       description,
+                    chargingSessions:  sessionArray
+                )
+        
+        return true
+        
+    }
+
+    func canonicalJSONForSignature(from json: Data) -> Data? {
+        guard var jsonObj = try? JSONSerialization.jsonObject(with: json, options: []) as? [String: Any] else {
+            return nil
+        }
+        jsonObj.removeValue(forKey: "signatures")
+        return try? JSONSerialization.data(withJSONObject: jsonObj, options: [])
+    }
+
+
+    
+    
+    
+    func validate() {
+        for session in chargingSessions ?? [] {
+            if session.validation == nil {
+                session.validation = session.validateChargingSession()
+            }
+        }
+    }
+
+    
+    
 }
