@@ -9,9 +9,25 @@ import Foundation
 
 public typealias JSON = [String: Any]
 
-extension JSON {
+public final class JSONUtils
+{
 
-    
+  /// Produces a canonical “signable” JSON blob by stripping out `signatures` and
+  /// emitting the leanest serialization (no pretty-print, no sorted-keys).
+  public static func canonicalJSONForSignature(from json: Data) -> Data? {
+      guard var jsonObj = (try? JSONSerialization.jsonObject(with: json, options: []))
+                        as? [String: Any] else {
+          return nil
+      }
+      jsonObj.removeValue(forKey: "signatures")
+      return try? JSONSerialization.data(withJSONObject: jsonObj, options: .sortedKeys)
+  }
+
+}
+
+extension JSON
+{
+
     /// Attempts to extract a non-optional String for the given key from this dictionary.
     /// - Parameters:
     ///   - key: The JSON key to look up.
@@ -230,6 +246,51 @@ extension JSON {
         // Ensure the key maps to an array
         guard let rawArray = self[key] as? [Any] else {
             errorResponse = "Missing array for key '\(key)'"
+            return false
+        }
+        var parsedArray: [T] = []
+        for (index, item) in rawArray.enumerated() {
+            guard let dict = item as? JSON else {
+                errorResponse = "Invalid JSON object at array index \(index)"
+                return false
+            }
+            var parsedElement: T?
+            var elementError: String?
+            guard parser(dict, &parsedElement, &elementError) else {
+                errorResponse = "Error parsing element at index \(index): \(elementError ?? "unknown error")"
+                return false
+            }
+            if let element = parsedElement {
+                parsedArray.append(element)
+            }
+        }
+        result = parsedArray
+        errorResponse = nil
+        return true
+    }
+
+    /// Parses an optional JSON array under `key` into a typed array using the provided parser.
+    /// - Parameters:
+    ///   - key: The JSON key whose value may be an array of objects.
+    ///   - result: An inout array to receive the parsed elements (empty if key is missing).
+    ///   - errorResponse: An inout String? to receive an error message on failure.
+    ///   - parser: A function that takes a JSON object, an inout T?, and an inout String?, returning true on successful parse.
+    /// - Returns: True if the key is absent or all elements parse successfully; false otherwise.
+    func parseOptionalArray<T>(
+        _ key: String,
+        into result: inout [T]?,
+        errorResponse: inout String?,
+        using parser: (_ json: JSON, _ element: inout T?, _ errorResponse: inout String?) -> Bool
+    ) -> Bool {
+        // If key is missing, treat as empty array
+        guard let rawAny = self[key] else {
+            result = []
+            errorResponse = nil
+            return true
+        }
+        // Ensure the value is an array
+        guard let rawArray = rawAny as? [Any] else {
+            errorResponse = "Invalid array for key '\(key)'"
             return false
         }
         var parsedArray: [T] = []

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum CryptoAlgorithms: String, Codable {
+enum CryptoAlgorithms: String {
     case RSA         = "RSA"
     case ECC         = "ECC"
 }

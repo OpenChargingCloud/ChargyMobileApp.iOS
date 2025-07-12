@@ -52,7 +52,13 @@ struct ChargeTransparencyDataView: View {
                        .fontWeight(.bold)
                        .frame(maxWidth: .infinity, alignment: .center)
                        .padding(.vertical, 8)
-//                       .background(Color(.lightGray))
+                }
+
+                if let ctrContract = viewModel.ctr?.contracts?.first {
+                    Text(ctrContract.id)
+                       .font(.headline)
+                       .frame(maxWidth: .infinity, alignment: .center)
+                       .padding(.vertical, 8)
                 }
 
                 List(viewModel.sessions) {
@@ -90,9 +96,9 @@ struct ChargeTransparencyDataView: View {
                                 }
                             }
                             
-                            if let validation = session.validation {
-                                Text("Validation: \(validation.rawValue)")
-                            }
+//                            if let validation = session.validation {
+//                                Text("Validation: \(validation.rawValue)")
+//                            }
                             
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)

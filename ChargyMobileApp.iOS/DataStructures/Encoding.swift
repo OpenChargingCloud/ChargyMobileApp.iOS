@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum Encoding: String, Codable {
+enum Encoding: String {
     case hex         = "hex"
     case base64      = "base64"
 }

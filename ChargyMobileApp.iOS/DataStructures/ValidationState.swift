@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ValidationState: String, Codable {
+enum ValidationState: String {
     case valid
     case invalid
     case error

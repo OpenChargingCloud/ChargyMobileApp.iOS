@@ -10,6 +10,7 @@ import SwiftUI
 import CryptoKit
 
 class ChargeTransparencyDataViewModel: ObservableObject {
+    @Published var ctr:          ChargeTransparencyRecord?
     @Published var description:  I18NString?
     @Published var sessions:     [ChargingSession] = []
     @Published var errorMessage: String?
@@ -19,7 +20,6 @@ class ChargeTransparencyDataViewModel: ObservableObject {
             let data = Data(string.utf8)
             do {
                 
-                // 1) Parse raw JSON object
                 let any = try JSONSerialization.jsonObject(with: data, options: [])
                 guard let jsonObject = any as? [String: Any] else {
                     fatalError("Expected a JSON object!")
@@ -34,6 +34,7 @@ class ChargeTransparencyDataViewModel: ObservableObject {
 
                     chargeTransparencyRecord!.validate()
                     
+                    self.ctr          = chargeTransparencyRecord
                     self.description  = chargeTransparencyRecord!.description
                     self.sessions     = chargeTransparencyRecord!.chargingSessions ?? []
                     self.errorMessage = nil

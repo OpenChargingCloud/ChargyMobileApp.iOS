@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum PublicKeyFormats: String, Codable {
+enum PublicKeyFormats: String {
     case DER         = "DER"
     case XY          = "XY"
 }

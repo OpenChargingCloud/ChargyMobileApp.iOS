@@ -8,14 +8,9 @@
 import Foundation
 import CryptoKit
 
-extension CodingUserInfoKey {
-    static let rawJSONString = CodingUserInfoKey(rawValue: "rawJSONString")!
-}
-
-class ChargingSession: Identifiable, Codable {
+class ChargingSession: Identifiable, JSONSerializable {
         
-    /// Stores the raw JSON string used to decode this session
-    public private(set) var rawJSON: String?
+    public private(set) var rawJSON:                    [String: Any]?
 
     public private(set) var id:                         String
     public private(set) var context:                    String?
@@ -29,7 +24,6 @@ class ChargingSession: Identifiable, Codable {
                         var validation:                 ValidationState?
 
     public private(set) var chargeTransparencyRecord:   ChargeTransparencyRecord?
-                        var originalCTR:                String?
 
     
     init(
@@ -41,10 +35,8 @@ class ChargingSession: Identifiable, Codable {
         meterValues:               [MeterValue]?               = nil,
         signatures:                [Signature]?                = nil,
         validation:                ValidationState?            = nil,
-        chargeTransparencyRecord:  ChargeTransparencyRecord?   = nil,
-        originalCTR:               String?                     = nil
+        chargeTransparencyRecord:  ChargeTransparencyRecord?   = nil
     ) {
-        self.originalCTR               = originalCTR
         self.id                        = id
         self.context                   = context
         self.begin                     = begin
@@ -55,62 +47,16 @@ class ChargingSession: Identifiable, Codable {
         self.validation                = validation
         self.chargeTransparencyRecord  = chargeTransparencyRecord
     }
-    
-    required convenience init(from decoder: Decoder) throws {
-        
-        // Capture raw JSON from decoder.userInfo
-        var rawJSONString: String? = nil
-        if let raw = decoder.userInfo[CodingUserInfoKey.rawJSONString] as? String {
-            rawJSONString = raw
-        }
-        // Decode all other properties as before
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let id                        = try container.decode(String.self, forKey: .id)
-        let begin                     = try container.decode(Date.self, forKey: .begin)
-        let context                   = try container.decodeIfPresent(String.self, forKey: .context)
-        let end                       = try container.decodeIfPresent(Date.self, forKey: .end)
-        let energy                    = try container.decodeIfPresent(Double.self, forKey: .energy)
-        let meterValues               = try container.decodeIfPresent([MeterValue].self, forKey: .meterValues)
-        let signatures                = try container.decodeIfPresent([Signature].self, forKey: .signatures)
-        let validation                = try container.decodeIfPresent(ValidationState.self, forKey: .validation)
-        let chargeTransparencyRecord  = try container.decodeIfPresent(ChargeTransparencyRecord.self, forKey: .chargeTransparencyRecord)
-        let originalCTR               = try container.decodeIfPresent(String.self, forKey: .originalCTR)
-        
-        self.init(
-            id: id,
-            begin: begin,
-            context: context,
-            end: end,
-            energy: energy,
-            meterValues: meterValues,
-            signatures: signatures,
-            validation: validation,
-            chargeTransparencyRecord: chargeTransparencyRecord,
-            originalCTR: originalCTR
-        )
-        
-        self.rawJSON = rawJSONString
 
-    }
-    
-    
-    func canonicalJSONForSignature(from json: Data) -> Data? {
-        guard var jsonObj = try? JSONSerialization.jsonObject(with: json, options: []) as? [String: Any] else {
-            return nil
-        }
-        jsonObj.removeValue(forKey: "signatures")
-        return try? JSONSerialization.data(withJSONObject: jsonObj, options: [])
-    }
-    
-    
+
     func validateChargingSession() -> ValidationState {
-
-        guard let originalJSONString = originalCTR,
-              let originalData = originalJSONString.data(using: .utf8) else {
+        
+        guard let json         = rawJSON,
+              let originalData = try? JSONSerialization.data(withJSONObject: json, options: []) else {
             return .error
         }
 
-        guard let canonicalData = canonicalJSONForSignature(from: originalData) else {
+        guard let canonicalJSON = JSONUtils.canonicalJSONForSignature(from: originalData) else {
             return .error
         }
 
@@ -137,7 +83,7 @@ class ChargingSession: Identifiable, Codable {
                 continue
             }
 
-            sig.validation = ecKey.isValidSignature(ecdsaSignature, for: canonicalData)
+            sig.validation = ecKey.isValidSignature(ecdsaSignature, for: canonicalJSON)
                                  ? .valid
                                  : .invalid
             
@@ -151,10 +97,10 @@ class ChargingSession: Identifiable, Codable {
     }
     
     
-    static func parse(from data:     [String: Any],
-                      value:         inout ChargingSession?,
-                      errorResponse: inout String?) -> Bool {
-        
+    static func parse(from data:      [String: Any],
+                      value:          inout ChargingSession?,
+                      errorResponse:  inout String?) -> Bool {
+                
         var id: String?
         if !data.parseMandatoryString("id", value: &id, errorResponse: &errorResponse) {
             return false
@@ -162,6 +108,13 @@ class ChargingSession: Identifiable, Codable {
         
         var description: I18NString?
         if data.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+
+        var context: String?
+        if data.parseOptionalString("context", value: &context, errorResponse: &errorResponse) {
             if (!(errorResponse == nil)) {
                 return false
             }
@@ -188,18 +141,67 @@ class ChargingSession: Identifiable, Codable {
             }
         }
 
-        
+        var meterValues: [MeterValue]?
+        if data.parseOptionalArray("meterValues", into: &meterValues, errorResponse: &errorResponse, using: MeterValue.parse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+
+        var signatures: [Signature]?
+        if data.parseOptionalArray("signatures", into: &signatures, errorResponse: &errorResponse, using: Signature.parse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+
         value = ChargingSession(
                     id:                id!,
                     begin:             begin!,
+                    context:           context,
                     end:               end,
-                    energy:            energy
+                    energy:            energy,
+                    meterValues:       meterValues,
+                    signatures:        signatures
 //                    description:       description,
 //                    chargingSessions:  sessions
                 )
+        
+        value!.rawJSON = data
         
         return true
         
     }
     
+    func toJSON() -> [String: Any] {
+
+        var dict: [String: Any] = [
+            "id":    id,
+            "begin": ISO8601DateFormatter().string(from: begin)
+        ]
+        
+        if let context = context {
+            dict["context"] = context
+        }
+        
+        if let end = end {
+            dict["end"] = ISO8601DateFormatter().string(from: end)
+        }
+        
+        if let energy = energy {
+            dict["energy"] = energy
+        }
+        
+        if let meterValues = meterValues {
+            dict["meterValues"] = meterValues.map { $0.toJSON() }
+        }
+        
+        if let signatures = signatures {
+            dict["signatures"] = signatures.map { $0.toJSON() }
+        }
+        
+        return dict
+        
+    }
+
 }

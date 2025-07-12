@@ -10,7 +10,7 @@ import SwiftUI
 struct StartView: View {
     
     @StateObject private var viewModel = ChargeTransparencyDataViewModel()
-    @State private var navigate = false
+    @State       private var navigate  = false
     
     var body: some View {
         NavigationStack {
@@ -28,6 +28,7 @@ struct StartView: View {
             }
         }
     }
+    
 }
 
 #Preview {

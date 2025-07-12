@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct I18NString: Codable {
+struct I18NString: JSONSerializable {
     
     var values: [String: String] = [:]
     
@@ -47,5 +47,29 @@ struct I18NString: Codable {
         get { values[lang] }
         set { values[lang] = newValue }
     }
-    
+
+    /// Parses an I18NString from a JSON dictionary.
+    /// - Parameters:
+    ///   - data: The raw JSON dictionary representing language-to-string mappings.
+    ///   - value: An inout I18NString? to receive the parsed result.
+    ///   - errorResponse: An inout String? to receive an error message on failure.
+    /// - Returns: True if parsing succeeds; false otherwise.
+    static func parse(
+        from data:      [String: Any],
+        value:          inout I18NString?,
+        errorResponse:  inout String?
+    ) -> Bool {
+        guard let dict = data as? [String: String] else {
+            errorResponse = "Invalid I18NString value: expected object of [String:String]"
+            return false
+        }
+        value = I18NString(values: dict)
+        errorResponse = nil
+        return true
+    }
+
+    func toJSON() -> [String: Any] {
+        return values
+    }
+
 }

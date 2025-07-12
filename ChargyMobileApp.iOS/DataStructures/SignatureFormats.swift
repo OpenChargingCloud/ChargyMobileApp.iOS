@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SignatureFormats: String, Codable {
+enum SignatureFormats: String {
     case DER         = "DER"
     case RS          = "RS"
 }
