@@ -9,38 +9,6 @@ import Foundation
 
 public typealias JSON = [String: Any]
 
-//enum JSONUtils {
-//
-//    /// Attempts to extract a non-optional String for the given key.
-//    /// - Parameters:
-//    ///   - key: The JSON key to look up.
-//    ///   - data: The JSON dictionary.
-//    ///   - value: An inout String? into which the extracted value is written on success.
-//    ///   - errorResponse: An inout String? into which an error message is written on failure.
-//    /// - Returns: True if the key exists and is a String; false otherwise.
-//    static func parseMandatoryString(
-//        _    key:            String,
-//        from data:           [String: Any],
-//        value:         inout String?,
-//        errorResponse: inout String?
-//    ) -> Bool {
-//
-//        guard let v = data[key] as? String else {
-//            errorResponse = "Missing or invalid '\(key)' field!"
-//            return false
-//        }
-//
-//        value         = v
-//        errorResponse = nil
-//
-//        return true
-//
-//    }
-//
-//
-//
-//
-
 extension JSON {
 
     
@@ -55,11 +23,15 @@ extension JSON {
         value:         inout String?,
         errorResponse: inout String?
     ) -> Bool {
-        guard let v = self[key] as? String else {
-            errorResponse = "Missing or invalid '\(key)' field!"
+        guard let rawAny = self[key] else {
+            errorResponse = "Missing '\(key)' field!"
             return false
         }
-        value         = v
+        guard let v = rawAny as? String else {
+            errorResponse = "Invalid '\(key)' field: expected String"
+            return false
+        }
+        value = v
         errorResponse = nil
         return true
     }
@@ -98,11 +70,15 @@ extension JSON {
         value:         inout I18NString?,
         errorResponse: inout String?
     ) -> Bool {
-        guard let dict = self[key] as? [String: String] else {
-            errorResponse = "Missing or invalid '\(key)' I18NString field!"
+        guard let rawAny = self[key] else {
+            errorResponse = "Missing '\(key)' I18NString field!"
             return false
         }
-        value         = I18NString(values: dict)
+        guard let dict = rawAny as? [String: String] else {
+            errorResponse = "Invalid '\(key)' I18NString field: expected object of string values"
+            return false
+        }
+        value = I18NString(values: dict)
         errorResponse = nil
         return true
     }
@@ -138,12 +114,16 @@ extension JSON {
     ///   - errorResponse: An inout String? into which an error message is written on failure.
     /// - Returns: True if the key exists and a valid ISO8601 date string; false otherwise.
     func parseMandatoryDate(
-        _ key: String,
-        value: inout Date?,
+        _ key:               String,
+        value:         inout Date?,
         errorResponse: inout String?
     ) -> Bool {
-        guard let raw = self[key] as? String else {
-            errorResponse = "Missing or invalid '\(key)' Date field!"
+        guard let rawAny = self[key] else {
+            errorResponse = "Missing '\(key)' Date field!"
+            return false
+        }
+        guard let raw = rawAny as? String else {
+            errorResponse = "Invalid '\(key)' Date field: expected String"
             return false
         }
         let formatter = ISO8601DateFormatter()
@@ -185,6 +165,55 @@ extension JSON {
     }
     
     
+    /// Attempts to extract a non-optional Double for the given key from this dictionary.
+    /// - Parameters:
+    ///   - key: The JSON key to look up.
+    ///   - value: An inout Double? into which the extracted value is written on success.
+    ///   - errorResponse: An inout String? into which an error message is written on failure.
+    /// - Returns: True if the key exists and is a Double; false otherwise.
+    func parseMandatoryDouble(
+        _ key: String,
+        value: inout Double?,
+        errorResponse: inout String?
+    ) -> Bool {
+        // Check presence of the key
+        guard let rawAny = self[key] else {
+            errorResponse = "Missing '\(key)' Double field!"
+            return false
+        }
+        // Check type of the value
+        guard let num = rawAny as? Double else {
+            errorResponse = "Invalid '\(key)' field: expected Double"
+            return false
+        }
+        value = num
+        errorResponse = nil
+        return true
+    }
+
+    /// Attempts to extract an optional Double for the given key from this dictionary.
+    /// - Parameters:
+    ///   - key: The JSON key to look up.
+    ///   - value: An inout Double? into which the extracted value is written on success.
+    ///   - errorResponse: An inout String? into which an error message is written on failure.
+    /// - Returns: False if the key is absent; true if the key exists but the Double is invalid.
+    func parseOptionalDouble(
+        _ key:               String,
+        value:         inout Double?,
+        errorResponse: inout String?
+    ) -> Bool {
+        guard let rawAny = self[key] else {
+            return false
+        }
+        guard let num = rawAny as? Double else {
+            errorResponse = "Invalid '\(key)' field: expected Double"
+            return true
+        }
+        value = num
+        errorResponse = nil
+        return true
+    }
+
     /// Parses a JSON array under `key` into a typed array using the provided parser.
     /// - Parameters:
     ///   - key: The JSON key whose value should be an array of objects.
@@ -196,11 +225,11 @@ extension JSON {
         _    key:            String,
         into result:   inout [T],
         errorResponse: inout String?,
-        using parser: (_ dict: JSON, _ element: inout T?, _ errorResponse: inout String?) -> Bool
+        using parser: (_ json: JSON, _ element: inout T?, _ errorResponse: inout String?) -> Bool
     ) -> Bool {
         // Ensure the key maps to an array
         guard let rawArray = self[key] as? [Any] else {
-            errorResponse = "Missing or invalid array for key '\(key)'"
+            errorResponse = "Missing array for key '\(key)'"
             return false
         }
         var parsedArray: [T] = []

@@ -19,9 +19,9 @@ struct ChargingSessionView: View {
                 if let end = session.end {
                     Text("End: \(ChargeTransparencyDataView.dateFormatter.string(from: end))")
                 }
-//                if let energy = session.energy {
-//                    Text("Energie: \(energy, specifier: \"%.2f\") kWh")
-//                }
+                if let energy = session.energy {
+                    Text(String(format: "Energie: %.2f kWh", energy))
+                }
                 if let signatures = session.signatures {
                     ForEach(signatures.indices, id: \.self) { i in
                         let sig = signatures[i]

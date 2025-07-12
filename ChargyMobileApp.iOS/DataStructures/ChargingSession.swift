@@ -181,11 +181,19 @@ class ChargingSession: Identifiable, Codable {
             }
         }
 
+        var energy: Double?
+        if data.parseOptionalDouble("energy", value: &energy, errorResponse: &errorResponse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+
         
         value = ChargingSession(
                     id:                id!,
                     begin:             begin!,
-                    end:               end
+                    end:               end,
+                    energy:            energy
 //                    description:       description,
 //                    chargingSessions:  sessions
                 )
