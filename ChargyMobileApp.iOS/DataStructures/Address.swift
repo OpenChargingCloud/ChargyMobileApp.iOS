@@ -9,104 +9,111 @@ import Foundation
 
 class Address {
     
-    var context:       String
     var city:          String
+    var postalCode:    String
+    var country:       String // Code?
     var Street:        String?
     var houseNumber:   String?
     var floorLevel:    String?
-    var postalCode:    String?
-    var country:       String? // Code?
     var comment:       I18NString?
-    
+    var context:       String?
 
     init(
-        context: String,
         city: String,
+        postalCode: String,
+        country: String,
         street: String? = nil,
         houseNumber: String? = nil,
         floorLevel: String? = nil,
-        postalCode: String? = nil,
-        country: String? = nil,
-        comment: I18NString? = nil
+        comment: I18NString? = nil,
+        context: String? = nil
     ) {
-        self.context     = context
         self.city        = city
+        self.postalCode  = postalCode
+        self.country     = country
         self.Street      = street
         self.houseNumber = houseNumber
         self.floorLevel  = floorLevel
-        self.postalCode  = postalCode
-        self.country     = country
         self.comment     = comment
+        self.context     = context
     }
 
 
     static func parse(
-        from data: [String: Any],
-        value: inout Address?,
-        errorResponse: inout String?
+        from data:      [String: Any],
+        value:          inout Address?,
+        errorResponse:  inout String?
     ) -> Bool {
-        // context (mandatory)
-        var ctx: String?
-        guard data.parseMandatoryString("context", value: &ctx, errorResponse: &errorResponse),
-              let context = ctx else {
+
+        var city: String?
+        guard data.parseMandatoryString("city", value: &city, errorResponse: &errorResponse) else {
             return false
         }
-        // city (mandatory)
-        var cty: String?
-        guard data.parseMandatoryString("city", value: &cty, errorResponse: &errorResponse),
-              let city = cty else {
+
+        var postalCode: String?
+        guard data.parseMandatoryString("postalCode", value: &postalCode, errorResponse: &errorResponse) else {
             return false
         }
-        // optional fields
+
+        var country: String?
+        guard data.parseMandatoryString("country", value: &country, errorResponse: &errorResponse) else {
+            return false
+        }
+        
         let street      = data["street"]      as? String
         let houseNumber = data["houseNumber"] as? String
         let floorLevel  = data["floorLevel"]  as? String
-        let postalCode  = data["postalCode"]  as? String
-        let country     = data["country"]     as? String
-        // comment (optional I18NString)
+        let context     = data["@context"]    as? String
+
         var commentValue: I18NString?
-        guard data.parseOptionalI18NString("comment", value: &commentValue, errorResponse: &errorResponse) else {
-            return false
+        if data.parseOptionalI18NString("comment", value: &commentValue, errorResponse: &errorResponse) {
+            if (errorResponse != nil)
+            {
+                return false
+            }
         }
-        // initialize
+
         value = Address(
-            context: context,
-            city: city,
+            city: city!,
+            postalCode: postalCode!,
+            country: country!,
             street: street,
             houseNumber: houseNumber,
             floorLevel: floorLevel,
-            postalCode: postalCode,
-            country: country,
-            comment: commentValue
+            comment: commentValue,
+            context: context
         )
+        
         errorResponse = nil
         return true
+        
     }
     
     func toJSON() -> [String: Any] {
-        var dict: [String: Any] = [
-            "context": context,
-            "city": city
+        
+        var json: [String: Any] = [
+            "city": city,
+            "postalCode": postalCode,
+            "country": country
         ]
         if let street = Street {
-            dict["street"] = street
+            json["street"] = street
         }
         if let houseNumber = houseNumber {
-            dict["houseNumber"] = houseNumber
+            json["houseNumber"] = houseNumber
         }
         if let floorLevel = floorLevel {
-            dict["floorLevel"] = floorLevel
-        }
-        if let postalCode = postalCode {
-            dict["postalCode"] = postalCode
-        }
-        if let country = country {
-            dict["country"] = country
+            json["floorLevel"] = floorLevel
         }
         if let comment = comment {
-            dict["comment"] = comment.toJSON()
+            json["comment"] = comment.toJSON()
         }
-        return dict
+        if let context = context {
+            json["@context"] = context
+        }
+        
+        return json
+        
     }
 
 }

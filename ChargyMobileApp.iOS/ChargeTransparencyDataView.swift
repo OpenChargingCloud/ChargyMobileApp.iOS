@@ -46,7 +46,7 @@ struct ChargeTransparencyDataView: View {
                         .padding()
                 }
                 
-                if let ctrDescription = viewModel.description?["en"] {
+                if let ctrDescription = viewModel.description?.first() {
                     Text(ctrDescription)
                        .font(.headline)
                        .fontWeight(.bold)
@@ -72,16 +72,8 @@ struct ChargeTransparencyDataView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             
                             Text(Self.dateFormatter.string(from: session.begin))
-                            
-                            Text({
-                                let startStr = Self.timeFormatter.string(from: session.begin)
-                                guard let end = session.end else { return "\(startStr) - still running" }
-                                let duration = end.timeIntervalSince(session.begin)
-                                let days = Int(duration / 86400)
-                                let dayStr = days > 0 ? Self.weekdayFormatter.string(from: end) + " " : ""
-                                let endStr = Self.timeFormatter.string(from: end) + " Uhr"
-                                return "\(startStr) - \(dayStr)\(endStr)"
-                            }())
+
+                            Text(session.formattedTimeRange)
                             
                             if let energy = session.energy {
                                 Text(String(format: "Energie: %.2f kWh", energy))

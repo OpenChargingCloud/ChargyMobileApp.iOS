@@ -9,18 +9,18 @@ import Foundation
 
 class Support: JSONSerializable {
 
-    var hotline:             String?
     var email:               String
+    var hotline:             String?
     var web:                 String?
-    var mediationServices:   [MediationService]?
-    var publicKeys:          [PublicKey]
+    var mediationServices:  [MediationService]?
+    var publicKeys:         [PublicKey]?
 
     init(
-        hotline: String? = nil,
-        email: String,
-        web: String? = nil,
-        mediationServices: [MediationService]? = nil,
-        publicKeys: [PublicKey]
+        email:               String,
+        hotline:             String?               = nil,
+        web:                 String?               = nil,
+        mediationServices:   [MediationService]?   = nil,
+        publicKeys:          [PublicKey]?          = nil
     ) {
         self.hotline            = hotline
         self.email              = email
@@ -30,45 +30,42 @@ class Support: JSONSerializable {
     }
 
     func toJSON() -> [String: Any] {
-        var dict: [String: Any] = [
+        var json: [String: Any] = [
             "email": email
         ]
-        if let hotline = hotline {
-            dict["hotline"] = hotline
-        }
         if let web = web {
-            dict["web"] = web
+            json["web"] = web
+        }
+        if let hotline = hotline {
+            json["hotline"] = hotline
         }
         if let services = mediationServices {
-            dict["mediationServices"] = services.map { $0.toJSON() }
+            json["mediationServices"] = services.map { $0.toJSON() }
         }
-        if !publicKeys.isEmpty {
-            dict["publicKeys"] = publicKeys.map { $0.toJSON() }
+        if let keys = publicKeys, !keys.isEmpty {
+            json["publicKeys"] = keys.map { $0.toJSON() }
         }
-        return dict
+        return json
     }
 
     static func parse(
-        from data: [String: Any],
-        value: inout Support?,
-        errorResponse: inout String?
+        from data:      [String: Any],
+        value:          inout Support?,
+        errorResponse:  inout String?
     ) -> Bool {
-        // hotline (optional)
-        var hotlineValue: String?
-        _ = data.parseOptionalString("hotline", value: &hotlineValue, errorResponse: &errorResponse)
 
-        // email (mandatory)
         var emailValue: String?
         guard data.parseMandatoryString("email", value: &emailValue, errorResponse: &errorResponse),
               let email = emailValue else {
             return false
         }
 
-        // web (optional)
+        var hotlineValue: String?
+        _ = data.parseOptionalString("hotline", value: &hotlineValue, errorResponse: &errorResponse)
+
         var webValue: String?
         _ = data.parseOptionalString("web", value: &webValue, errorResponse: &errorResponse)
 
-        // mediationServices (optional array)
         var services: [MediationService]? = []
         guard data.parseOptionalArray(
             "mediationServices",
@@ -81,11 +78,10 @@ class Support: JSONSerializable {
             return false
         }
 
-        // publicKeys (mandatory array)
-        var keys: [PublicKey] = []
-        guard data.parseMandatoryArray(
+        var publicKeys: [PublicKey]? = []
+        guard data.parseOptionalArray(
             "publicKeys",
-            into: &keys,
+            into: &publicKeys,
             errorResponse: &errorResponse,
             using: { dict, key, err in
                 PublicKey.parse(from: dict, value: &key, errorResponse: &err)
@@ -94,15 +90,17 @@ class Support: JSONSerializable {
             return false
         }
 
-        // Instantiate
         value = Support(
-            hotline: hotlineValue,
-            email: email,
-            web: webValue,
-            mediationServices: services,
-            publicKeys: keys
-        )
+                    email:              email,
+                    hotline:            hotlineValue,
+                    web:                webValue,
+                    mediationServices:  services,
+                    publicKeys:         publicKeys
+                )
+        
         errorResponse = nil
         return true
+        
     }
+    
 }

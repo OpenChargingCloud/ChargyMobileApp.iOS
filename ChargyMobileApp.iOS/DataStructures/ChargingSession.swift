@@ -26,6 +26,45 @@ class ChargingSession: Identifiable, JSONSerializable {
     public private(set) var chargeTransparencyRecord:   ChargeTransparencyRecord?
 
     
+    /// “21:00:00 – Sa 22:34:00 (1 day 3h 34m)”
+    var formattedTimeRange: String {
+      let startStr = ChargeTransparencyDataView.timeFormatter.string(from: begin)
+      let end: Date = self.end ?? Date()
+      let endStr  = self.end != nil
+        ? ChargeTransparencyDataView.timeFormatter.string(from: end) + " Uhr"
+        : "still running"
+      
+      let duration = end.timeIntervalSince(begin)
+      let days     = Int(duration / 86400)
+      let dayStr   = days > 0
+        ? ChargeTransparencyDataView.weekdayFormatter.string(from: end) + " "
+        : ""
+
+      let totalSeconds = Int(duration)
+      let d =  totalSeconds / 86400
+      let h = (totalSeconds % 86400) / 3600
+      let m = (totalSeconds % 3600)  / 60
+      let s =  totalSeconds % 60
+
+      let durationText: String
+
+      if d > 1 {
+        durationText = "\n(\(d) Tage \(h) Std. \(m) Min.)"
+      } else if d > 0 {
+        durationText = "\n(\(d) Tag \(h) Std. \(m) Min.)"
+      } else if h > 0 {
+        durationText = "(\(h) Std. \(m) Min.)"
+      } else if m > 0 {
+        durationText = "(\(m) Min. \(s) Sek.)"
+      } else {
+        durationText = "(\(s) Sek.)"
+      }
+
+      return "\(startStr) – \(dayStr)\(endStr) \(durationText)"
+
+    }
+
+    
     init(
         id:                        String,
         begin:                     Date,
@@ -97,59 +136,59 @@ class ChargingSession: Identifiable, JSONSerializable {
     }
     
     
-    static func parse(from data:      [String: Any],
+    static func parse(from json:      [String: Any],
                       value:          inout ChargingSession?,
                       errorResponse:  inout String?) -> Bool {
                 
         var id: String?
-        if !data.parseMandatoryString("id", value: &id, errorResponse: &errorResponse) {
+        if !json.parseMandatoryString("@id", value: &id, errorResponse: &errorResponse) {
             return false
         }
         
         var description: I18NString?
-        if data.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) {
+        if json.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) {
             if (!(errorResponse == nil)) {
                 return false
             }
         }
 
         var context: String?
-        if data.parseOptionalString("context", value: &context, errorResponse: &errorResponse) {
+        if json.parseOptionalString("context", value: &context, errorResponse: &errorResponse) {
             if (!(errorResponse == nil)) {
                 return false
             }
         }
 
         var begin: Date?
-        if !data.parseMandatoryDate("begin", value: &begin, errorResponse: &errorResponse) {
+        if !json.parseMandatoryDate("begin", value: &begin, errorResponse: &errorResponse) {
             if (!(errorResponse == nil)) {
                 return false
             }
         }
         
         var end: Date?
-        if data.parseOptionalDate("end", value: &end, errorResponse: &errorResponse) {
+        if json.parseOptionalDate("end", value: &end, errorResponse: &errorResponse) {
             if (!(errorResponse == nil)) {
                 return false
             }
         }
 
         var energy: Double?
-        if data.parseOptionalDouble("energy", value: &energy, errorResponse: &errorResponse) {
+        if json.parseOptionalDouble("energy", value: &energy, errorResponse: &errorResponse) {
             if (!(errorResponse == nil)) {
                 return false
             }
         }
 
         var meterValues: [MeterValue]?
-        if data.parseOptionalArray("meterValues", into: &meterValues, errorResponse: &errorResponse, using: MeterValue.parse) {
+        if json.parseOptionalArray("meterValues", into: &meterValues, errorResponse: &errorResponse, using: MeterValue.parse) {
             if (!(errorResponse == nil)) {
                 return false
             }
         }
 
         var signatures: [Signature]?
-        if data.parseOptionalArray("signatures", into: &signatures, errorResponse: &errorResponse, using: Signature.parse) {
+        if json.parseOptionalArray("signatures", into: &signatures, errorResponse: &errorResponse, using: Signature.parse) {
             if (!(errorResponse == nil)) {
                 return false
             }
@@ -167,7 +206,7 @@ class ChargingSession: Identifiable, JSONSerializable {
 //                    chargingSessions:  sessions
                 )
         
-        value!.rawJSON = data
+        value!.rawJSON = json
         
         return true
         
@@ -175,32 +214,32 @@ class ChargingSession: Identifiable, JSONSerializable {
     
     func toJSON() -> [String: Any] {
 
-        var dict: [String: Any] = [
-            "id":    id,
-            "begin": ISO8601DateFormatter().string(from: begin)
+        var json: [String: Any] = [
+            "@id":    id,
+            "begin":  ISO8601DateFormatter().string(from: begin)
         ]
         
         if let context = context {
-            dict["context"] = context
+            json["context"] = context
         }
         
         if let end = end {
-            dict["end"] = ISO8601DateFormatter().string(from: end)
+            json["end"] = ISO8601DateFormatter().string(from: end)
         }
         
         if let energy = energy {
-            dict["energy"] = energy
+            json["energy"] = energy
         }
         
         if let meterValues = meterValues {
-            dict["meterValues"] = meterValues.map { $0.toJSON() }
+            json["meterValues"] = meterValues.map { $0.toJSON() }
         }
         
         if let signatures = signatures {
-            dict["signatures"] = signatures.map { $0.toJSON() }
+            json["signatures"] = signatures.map { $0.toJSON() }
         }
         
-        return dict
+        return json
         
     }
 

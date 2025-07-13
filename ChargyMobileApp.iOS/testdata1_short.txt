@@ -1,12 +1,12 @@
 {
-    "id":                "1",
+    "@id":               "1",
     "description":       { "en": "Sessions of July 2025" },
     "contracts":         [{
-                            "id": "DE*GDF*C12345678*X"
+                            "@id": "DE*GDF*C12345678*X"
                          }],
     "chargingSessions":  [
         {
-            "id": "18a7a7f5-1a72-414b-97d1-8b18ffeb9c60",
+            "@id": "18a7a7f5-1a72-414b-97d1-8b18ffeb9c60",
             "begin": "2024-06-30T19:00:00Z",
             "signatures": [
                 {
@@ -17,13 +17,13 @@
             "energy": 23.52
         },
         {
-            "id": "ae6efcec-1290-4c1a-9dfd-cf3d1431f49b",
+            "@id": "ae6efcec-1290-4c1a-9dfd-cf3d1431f49b",
             "begin": "2025-06-12T19:23:03Z",
             "end":   "2025-06-12T21:42:07Z",
             "energy": 35.2
         },
         {
-            "id": "0fcece6e-6898-8768-3598-31f49bcf3d14",
+            "@id": "0fcece6e-6898-8768-3598-31f49bcf3d14",
             "begin": "2025-06-08T19:23:55Z",
             "end":   "2025-06-10T14:48:03Z",
             "energy": 29.62

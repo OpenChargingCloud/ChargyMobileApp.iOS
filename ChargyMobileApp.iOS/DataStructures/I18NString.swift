@@ -48,6 +48,12 @@ struct I18NString: JSONSerializable {
         set { values[lang] = newValue }
     }
 
+    
+    func first() -> String? {
+        return values.values.first
+    }
+    
+    
     /// Parses an I18NString from a JSON dictionary.
     /// - Parameters:
     ///   - data: The raw JSON dictionary representing language-to-string mappings.

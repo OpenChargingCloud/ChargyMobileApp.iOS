@@ -7,7 +7,8 @@
 
 import Foundation
 
-class ChargeTransparencyRecord: Identifiable, JSONSerializable {
+class ChargeTransparencyRecord: Identifiable,
+                                JSONSerializable {
 
     public private(set) var id:                         String
     public private(set) var context:                    String? //oder [String]
@@ -46,26 +47,26 @@ class ChargeTransparencyRecord: Identifiable, JSONSerializable {
 //    var status:                     SessionVerificationResult;
     
     var originalJSON:               String?
-    
-        
+
+
     init(id:                         String,
-         context:                    String?                    = nil,
-         begin:                      Date?                      = nil,
-         end:                        Date?                      = nil,
-         description:                I18NString?                = nil,
-         eMobilityProviders:         [EMobilityProvider]?       = nil,
-         contracts:                  [Contract]?                = nil,
-         chargingStationOperators:   [ChargingStationOperator]? = nil,
-         chargingPools:              [ChargingPool]?            = nil,
-         chargingStations:           [ChargingStation]?         = nil,
-         chargingTariffs:            [ChargingTariff]?          = nil,
-         energyMeters:               [EnergyMeter]?             = nil,
-         chargingSessions:           [ChargingSession]?         = nil,
-         publicKeys:                 [PublicKey]?               = nil,
-         signatures:                 [Signature]?               = nil,
-         warnings:                   [String]?                  = nil,
-         errors:                     [String]?                  = nil,
-         originalJSON:               String?                    = nil
+         context:                    String?                     = nil,
+         begin:                      Date?                       = nil,
+         end:                        Date?                       = nil,
+         description:                I18NString?                 = nil,
+         eMobilityProviders:        [EMobilityProvider]?         = nil,
+         contracts:                 [Contract]?                  = nil,
+         chargingStationOperators:  [ChargingStationOperator]?   = nil,
+         chargingPools:             [ChargingPool]?              = nil,
+         chargingStations:          [ChargingStation]?           = nil,
+         chargingTariffs:           [ChargingTariff]?            = nil,
+         energyMeters:              [EnergyMeter]?               = nil,
+         chargingSessions:          [ChargingSession]?           = nil,
+         publicKeys:                [PublicKey]?                 = nil,
+         signatures:                [Signature]?                 = nil,
+         warnings:                  [String]?                    = nil,
+         errors:                    [String]?                    = nil,
+         originalJSON:               String?                     = nil
     ) {
         self.id                        = id
         self.context                   = context
@@ -101,78 +102,91 @@ class ChargeTransparencyRecord: Identifiable, JSONSerializable {
 
 
     
-    static func parse(from data:     [String: Any],
+    static func parse(from json:     [String: Any],
                       value:         inout ChargeTransparencyRecord?,
                       errorResponse: inout String?) -> Bool {
 
         var id: String?
-        if !data.parseMandatoryString("id", value: &id, errorResponse: &errorResponse) {
+        if !json.parseMandatoryString("@id", value: &id, errorResponse: &errorResponse) {
             return false
         }
 
         var context: String?
-        _ = data.parseOptionalString("context", value: &context, errorResponse: &errorResponse)
+        if json.parseOptionalString("@context", value: &context, errorResponse: &errorResponse) {
+            if (errorResponse != nil) {
+                return false
+            }
+        }
 
         var begin: Date?
-        if let beginString = data["begin"] as? String {
-            begin = ISO8601DateFormatter().date(from: beginString)
+        if !json.parseMandatoryDate("begin", value: &begin, errorResponse: &errorResponse) {
+            return false
         }
+        
         var end: Date?
-        if let endString = data["end"] as? String {
-            end = ISO8601DateFormatter().date(from: endString)
+        if json.parseOptionalDate("end", value: &end, errorResponse: &errorResponse) {
+            if (errorResponse != nil) {
+                return false
+            }
         }
 
         var description: I18NString?
-        if data.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) {
-            if (!(errorResponse == nil)) {
+        if json.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) {
+            if (errorResponse != nil) {
                 return false
             }
         }
 
         var eMobilityProviders: [EMobilityProvider]?
-        if !data.parseOptionalArray("eMobilityProviders", into: &eMobilityProviders, errorResponse: &errorResponse, using: { dict, provider, err in
-            EMobilityProvider.parse(from: dict, value: &provider, errorResponse: &err)
-        }) {
+        if !json.parseOptionalArray(
+                "eMobilityProviders",
+                into:          &eMobilityProviders,
+                errorResponse: &errorResponse,
+                using:         { json, provider, err in EMobilityProvider.parse(from: json, value: &provider, errorResponse: &err)}
+            ) {
             return false
         }
 
         var contracts: [Contract]?
-        if !data.parseOptionalArray("contracts", into: &contracts, errorResponse: &errorResponse, using: { dict, contract, err in
-            Contract.parse(from: dict, value: &contract, errorResponse: &err)
-        }) {
+        if !json.parseOptionalArray(
+                "contracts",
+                into:          &contracts,
+                errorResponse: &errorResponse,
+                using:         { json, contract, err in Contract.parse(from: json, value: &contract, errorResponse: &err)}
+            ) {
             return false
         }
 
         var chargingStationOperators: [ChargingStationOperator]?
-        if !data.parseOptionalArray("chargingStationOperators", into: &chargingStationOperators, errorResponse: &errorResponse, using: { dict, op, err in
+        if !json.parseOptionalArray("chargingStationOperators", into: &chargingStationOperators, errorResponse: &errorResponse, using: { dict, op, err in
             ChargingStationOperator.parse(from: dict, value: &op, errorResponse: &err)
         }) {
             return false
         }
 
         var chargingPools: [ChargingPool]?
-        if !data.parseOptionalArray("chargingPools", into: &chargingPools, errorResponse: &errorResponse, using: { dict, pool, err in
+        if !json.parseOptionalArray("chargingPools", into: &chargingPools, errorResponse: &errorResponse, using: { dict, pool, err in
             ChargingPool.parse(from: dict, value: &pool, errorResponse: &err)
         }) {
             return false
         }
 
         var chargingStations: [ChargingStation]?
-        if !data.parseOptionalArray("chargingStations", into: &chargingStations, errorResponse: &errorResponse, using: { dict, station, err in
+        if !json.parseOptionalArray("chargingStations", into: &chargingStations, errorResponse: &errorResponse, using: { dict, station, err in
             ChargingStation.parse(from: dict, value: &station, errorResponse: &err)
         }) {
             return false
         }
 
         var chargingTariffs: [ChargingTariff]?
-        if !data.parseOptionalArray("chargingTariffs", into: &chargingTariffs, errorResponse: &errorResponse, using: { dict, tariff, err in
+        if !json.parseOptionalArray("chargingTariffs", into: &chargingTariffs, errorResponse: &errorResponse, using: { dict, tariff, err in
             ChargingTariff.parse(from: dict, value: &tariff, errorResponse: &err)
         }) {
             return false
         }
 
         var energyMeters: [EnergyMeter]?
-        if !data.parseOptionalArray("energyMeters", into: &energyMeters, errorResponse: &errorResponse, using: { dict, meter, err in
+        if !json.parseOptionalArray("energyMeters", into: &energyMeters, errorResponse: &errorResponse, using: { dict, meter, err in
             EnergyMeter.parse(from: dict, value: &meter, errorResponse: &err)
         }) {
             return false
@@ -180,7 +194,7 @@ class ChargeTransparencyRecord: Identifiable, JSONSerializable {
 
         var sessions: [ChargingSession] = []
         var error: String?
-        guard data.parseMandatoryArray(
+        guard json.parseMandatoryArray(
             "chargingSessions",
             into:          &sessions,
             errorResponse: &error,
@@ -193,117 +207,117 @@ class ChargeTransparencyRecord: Identifiable, JSONSerializable {
         }
 
         var publicKeys: [PublicKey]?
-        if !data.parseOptionalArray("publicKeys", into: &publicKeys, errorResponse: &errorResponse, using: { dict, key, err in
+        if !json.parseOptionalArray("publicKeys", into: &publicKeys, errorResponse: &errorResponse, using: { dict, key, err in
             PublicKey.parse(from: dict, value: &key, errorResponse: &err)
         }) {
             return false
         }
 
         var signatures: [Signature]?
-        if !data.parseOptionalArray("signatures", into: &signatures, errorResponse: &errorResponse, using: { dict, sig, err in
+        if !json.parseOptionalArray("signatures", into: &signatures, errorResponse: &errorResponse, using: { dict, sig, err in
             Signature.parse(from: dict, value: &sig, errorResponse: &err)
         }) {
             return false
         }
 
-        let originalJSON = data["originalJSON"] as? String
-
         value = ChargeTransparencyRecord(
-            id: id!,
-            context: context,
-            begin: begin,
-            end: end,
-            description: description,
-            eMobilityProviders: eMobilityProviders,
-            contracts: contracts,
-            chargingStationOperators: chargingStationOperators,
-            chargingPools: chargingPools,
-            chargingStations: chargingStations,
-            chargingTariffs: chargingTariffs,
-            energyMeters: energyMeters,
-            chargingSessions: sessions,
-            publicKeys: publicKeys,
-            signatures: signatures,
-            originalJSON: originalJSON
-        )
+                    id:                        id!,
+                    context:                   context,
+                    begin:                     begin,
+                    end:                       end,
+                    description:               description,
+                    eMobilityProviders:        eMobilityProviders,
+                    contracts:                 contracts,
+                    chargingStationOperators:  chargingStationOperators,
+                    chargingPools:             chargingPools,
+                    chargingStations:          chargingStations,
+                    chargingTariffs:           chargingTariffs,
+                    energyMeters:              energyMeters,
+                    chargingSessions:          sessions,
+                    publicKeys:                publicKeys,
+                    signatures:                signatures
+                )
 
         return true
+        
     }
 
     func toJSON() -> [String: Any] {
-        var dict: [String: Any] = [
-            "id": id
+
+        var json: [String: Any] = [
+            "@id": id
         ]
 
         if let context = context {
-            dict["context"] = context
+            json["@context"] = context
         }
 
         if let begin = begin {
-            dict["begin"] = ISO8601DateFormatter().string(from: begin)
+            json["begin"] = ISO8601DateFormatter().string(from: begin)
         }
 
         if let end = end {
-            dict["end"] = ISO8601DateFormatter().string(from: end)
+            json["end"] = ISO8601DateFormatter().string(from: end)
         }
 
         if let description = description {
-            dict["description"] = description.toJSON()
+            json["description"] = description.toJSON()
         }
 
         if let providers = eMobilityProviders {
-            dict["eMobilityProviders"] = providers.map { $0.toJSON() }
+            json["eMobilityProviders"] = providers.map { $0.toJSON() }
         }
 
         if let contracts = contracts {
-            dict["contracts"] = contracts.map { $0.toJSON() }
+            json["contracts"] = contracts.map { $0.toJSON() }
         }
 
         if let operators = chargingStationOperators {
-            dict["chargingStationOperators"] = operators.map { $0.toJSON() }
+            json["chargingStationOperators"] = operators.map { $0.toJSON() }
         }
 
         if let pools = chargingPools {
-            dict["chargingPools"] = pools.map { $0.toJSON() }
+            json["chargingPools"] = pools.map { $0.toJSON() }
         }
 
         if let stations = chargingStations {
-            dict["chargingStations"] = stations.map { $0.toJSON() }
+            json["chargingStations"] = stations.map { $0.toJSON() }
         }
 
         if let tariffs = chargingTariffs {
-            dict["chargingTariffs"] = tariffs.map { $0.toJSON() }
+            json["chargingTariffs"] = tariffs.map { $0.toJSON() }
         }
 
         if let meters = energyMeters {
-            dict["energyMeters"] = meters.map { $0.toJSON() }
+            json["energyMeters"] = meters.map { $0.toJSON() }
         }
 
         if let sessions = chargingSessions {
-            dict["chargingSessions"] = sessions.map { $0.toJSON() }
+            json["chargingSessions"] = sessions.map { $0.toJSON() }
         }
 
         if let keys = publicKeys {
-            dict["publicKeys"] = keys.map { $0.toJSON() }
+            json["publicKeys"] = keys.map { $0.toJSON() }
         }
 
         if let sigs = signatures {
-            dict["signatures"] = sigs.map { $0.toJSON() }
+            json["signatures"] = sigs.map { $0.toJSON() }
         }
 
         if let warnings = warnings {
-            dict["warnings"] = warnings
+            json["warnings"] = warnings
         }
 
         if let errors = errors {
-            dict["errors"] = errors
+            json["errors"] = errors
         }
 
         if let origJSON = originalJSON {
-            dict["originalJSON"] = origJSON
+            json["originalJSON"] = origJSON
         }
 
-        return dict
+        return json
+        
     }
     
     

@@ -38,7 +38,7 @@ class Contract: Identifiable, JSONSerializable {
                       errorResponse:  inout String?) -> Bool {
         
         var id: String?
-        if !data.parseMandatoryString("id", value: &id, errorResponse: &errorResponse) {
+        if !data.parseMandatoryString("@id", value: &id, errorResponse: &errorResponse) {
             return false
         }
         
@@ -93,32 +93,33 @@ class Contract: Identifiable, JSONSerializable {
     
     func toJSON() -> [String: Any] {
 
-        var dict: [String: Any] = [
-            "id": id
+        var json: [String: Any] = [
+            "@id": id
         ]
 
         if let context = context {
-            dict["context"] = context
+            json["context"] = context
         }
 
         if let description = description {
-            dict["description"] = description.toJSON()
+            json["description"] = description.toJSON()
         }
 
         if let type = type {
-            dict["type"] = type
+            json["type"] = type
         }
 
         if let username = username {
-            dict["username"] = username
+            json["username"] = username
         }
 
         if let email = email {
-            dict["email"] = email
+            json["email"] = email
         }
 
-        return dict
+        return json
 
     }
+
 
 }

@@ -315,6 +315,29 @@ extension JSON
     }
 
     
-    
-    
+    /// Attempts to parse an optional JSON object under `key` using the provided parser.
+    /// - Parameters:
+    ///   - key: The JSON key whose value may be a nested object.
+    ///   - value: An inout T? to receive the parsed result if the key exists.
+    ///   - errorResponse: An inout String? to receive an error message on failure.
+    ///   - parser: A function that takes the nested JSON, an inout T?, and an inout String?, returning true on successful parse.
+    /// - Returns: False if the key is missing; false (with errorResponse) if the value is not an object; otherwise the parser’s return value.
+    func parseOptionalJSON<T>(
+        _ key: String,
+        value: inout T?,
+        errorResponse: inout String?,
+        using parser: (_ json: JSON, _ element: inout T?, _ errorResponse: inout String?) -> Bool
+    ) -> Bool {
+        // If key is missing, nothing to parse
+        guard let rawAny = self[key] else {
+            return false
+        }
+        // Must be a JSON dictionary
+        guard let dict = rawAny as? JSON else {
+            errorResponse = "Invalid JSON object for key '\(key)'"
+            return false
+        }
+        // Delegate parsing to the provided parser
+        return parser(dict, &value, &errorResponse)
+    }
 }
