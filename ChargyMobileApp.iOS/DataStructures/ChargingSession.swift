@@ -16,6 +16,10 @@ class ChargingSession: Identifiable, JSONSerializable {
     public private(set) var context:                    String?
     public private(set) var begin:                      Date
     public private(set) var end:                        Date?
+    public private(set) var description:                I18NString?
+
+    public private(set) var evseId:                     String?
+    public private(set) var chargingStationId:          String?
 
     public private(set) var energy:                     Double?
     public private(set) var meterValues:                [MeterValue]?
@@ -24,10 +28,45 @@ class ChargingSession: Identifiable, JSONSerializable {
                         var validation:                 ValidationState?
 
     public private(set) var chargeTransparencyRecord:   ChargeTransparencyRecord?
+    
+
+//     ctr?:                       IChargeTransparencyRecord;
+//     GUI?:                       HTMLDivElement;
+//     internalSessionId?:         string;
+//     chargingProductRelevance?:  IChargingProductRelevance,
+    
+//     chargingStationOperatorId?: string;
+//     chargingStationOperator?:   IChargingStationOperator;
+//     chargingPoolId?:            string;
+//     chargingPool?:              IChargingPool;
+//     chargingStationId?:         string;
+//     chargingStation?:           IChargingStation;
+//     EVSEId:                     string;
+//     EVSE?:                      IEVSE;
+//     meterId?:                   string;
+//     meter?:                     IEnergyMeter;
+//     publicKey?:                 IPublicKey;
+//     tariffId?:                  string;
+//     chargingTariffs?:           Array<IChargingTariff>;
+
+//     chargingPeriods?:           Array<IChargingPeriod>;
+//     totalCosts?:                IChargingCosts;
+//     authorizationStart:         IAuthorization;
+//     authorizationStop?:         IAuthorization;
+//     product?:                   IChargingProduct;
+//     measurements:               Array<IMeasurement>;
+//     parking?:                   Array<IParking>;
+//     transparencyInfos?:         ITransparencyInfos;
+//     method?:                    ACrypt;
+//     original?:                  string;
+//     signature?:                 string|ISignatureRS;
+//     hashValue?:                 string;
+//     verificationResult?:        ISessionCryptoResult;
 
     
     /// “21:00:00 – Sa 22:34:00 (1 day 3h 34m)”
     var formattedTimeRange: String {
+
       let startStr = ChargeTransparencyDataView.timeFormatter.string(from: begin)
       let end: Date = self.end ?? Date()
       let endStr  = self.end != nil
@@ -36,7 +75,7 @@ class ChargingSession: Identifiable, JSONSerializable {
       
       let duration = end.timeIntervalSince(begin)
       let days     = Int(duration / 86400)
-      let dayStr   = days > 0
+      let dayStr   = self.end != nil && days > 0
         ? ChargeTransparencyDataView.weekdayFormatter.string(from: end) + " "
         : ""
 
@@ -70,6 +109,11 @@ class ChargingSession: Identifiable, JSONSerializable {
         begin:                     Date,
         context:                   String?                     = nil,
         end:                       Date?                       = nil,
+        description:               I18NString?                 = nil,
+        
+        evseId:                    String?                     = nil,
+        chargingStationId:         String?                     = nil,
+        
         energy:                    Double?                     = nil,
         meterValues:               [MeterValue]?               = nil,
         signatures:                [Signature]?                = nil,
@@ -80,6 +124,11 @@ class ChargingSession: Identifiable, JSONSerializable {
         self.context                   = context
         self.begin                     = begin
         self.end                       = end
+        self.description               = description
+        
+        self.evseId                    = evseId
+        self.chargingStationId         = chargingStationId
+        
         self.energy                    = energy
         self.meterValues               = meterValues
         self.signatures                = signatures
@@ -144,13 +193,6 @@ class ChargingSession: Identifiable, JSONSerializable {
         if !json.parseMandatoryString("@id", value: &id, errorResponse: &errorResponse) {
             return false
         }
-        
-        var description: I18NString?
-        if json.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) {
-            if (!(errorResponse == nil)) {
-                return false
-            }
-        }
 
         var context: String?
         if json.parseOptionalString("context", value: &context, errorResponse: &errorResponse) {
@@ -172,6 +214,29 @@ class ChargingSession: Identifiable, JSONSerializable {
                 return false
             }
         }
+        
+        var description: I18NString?
+        if json.parseOptionalI18NString("description", value: &description, errorResponse: &errorResponse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+
+        
+        var evseId: String?
+        if json.parseOptionalString("evseId", value: &evseId, errorResponse: &errorResponse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+
+        var chargingStationId: String?
+        if json.parseOptionalString("chargingStationId", value: &chargingStationId, errorResponse: &errorResponse) {
+            if (!(errorResponse == nil)) {
+                return false
+            }
+        }
+
 
         var energy: Double?
         if json.parseOptionalDouble("energy", value: &energy, errorResponse: &errorResponse) {
@@ -195,15 +260,22 @@ class ChargingSession: Identifiable, JSONSerializable {
         }
 
         value = ChargingSession(
-                    id:                id!,
-                    begin:             begin!,
-                    context:           context,
-                    end:               end,
-                    energy:            energy,
-                    meterValues:       meterValues,
-                    signatures:        signatures
-//                    description:       description,
-//                    chargingSessions:  sessions
+
+                    id:                  id!,
+                    begin:               begin!,
+                    context:             context,
+                    end:                 end,
+                    description:         description,
+                    
+                    evseId:              evseId,
+                    chargingStationId:   chargingStationId,
+
+                    energy:              energy,
+                    meterValues:         meterValues,
+                    signatures:          signatures
+//                    description:         description,
+//                    chargingSessions:    sessions
+
                 )
         
         value!.rawJSON = json
@@ -227,6 +299,20 @@ class ChargingSession: Identifiable, JSONSerializable {
             json["end"] = ISO8601DateFormatter().string(from: end)
         }
         
+        if let description = description {
+            json["description"] = description
+        }
+        
+        
+        if let evseId = evseId {
+            json["evseId"] = evseId
+        }
+        
+        if let chargingStationId = chargingStationId {
+            json["chargingStationId"] = chargingStationId
+        }
+
+
         if let energy = energy {
             json["energy"] = energy
         }

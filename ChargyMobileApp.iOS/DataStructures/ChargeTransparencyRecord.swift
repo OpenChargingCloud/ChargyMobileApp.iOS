@@ -119,8 +119,10 @@ class ChargeTransparencyRecord: Identifiable,
         }
 
         var begin: Date?
-        if !json.parseMandatoryDate("begin", value: &begin, errorResponse: &errorResponse) {
-            return false
+        if json.parseOptionalDate("begin", value: &begin, errorResponse: &errorResponse) {
+            if (errorResponse != nil) {
+                return false
+            }
         }
         
         var end: Date?
@@ -139,84 +141,98 @@ class ChargeTransparencyRecord: Identifiable,
 
         var eMobilityProviders: [EMobilityProvider]?
         if !json.parseOptionalArray(
-                "eMobilityProviders",
-                into:          &eMobilityProviders,
-                errorResponse: &errorResponse,
-                using:         { json, provider, err in EMobilityProvider.parse(from: json, value: &provider, errorResponse: &err)}
-            ) {
+            "eMobilityProviders",
+            into:           &eMobilityProviders,
+            errorResponse:  &errorResponse,
+            using:          { json, provider, err in EMobilityProvider.parse(from: json, value: &provider, errorResponse: &err)}
+        ) {
             return false
         }
 
         var contracts: [Contract]?
         if !json.parseOptionalArray(
-                "contracts",
-                into:          &contracts,
-                errorResponse: &errorResponse,
-                using:         { json, contract, err in Contract.parse(from: json, value: &contract, errorResponse: &err)}
-            ) {
+            "contracts",
+            into:           &contracts,
+            errorResponse:  &errorResponse,
+            using:          { json, contract, err in Contract.parse(from: json, value: &contract, errorResponse: &err)}
+        ) {
             return false
         }
 
         var chargingStationOperators: [ChargingStationOperator]?
-        if !json.parseOptionalArray("chargingStationOperators", into: &chargingStationOperators, errorResponse: &errorResponse, using: { dict, op, err in
-            ChargingStationOperator.parse(from: dict, value: &op, errorResponse: &err)
-        }) {
+        if !json.parseOptionalArray("chargingStationOperators",
+            into:           &chargingStationOperators,
+            errorResponse:  &errorResponse,
+            using:          { dict, op, err in ChargingStationOperator.parse(from: dict, value: &op, errorResponse: &err)}
+        ) {
             return false
         }
 
         var chargingPools: [ChargingPool]?
-        if !json.parseOptionalArray("chargingPools", into: &chargingPools, errorResponse: &errorResponse, using: { dict, pool, err in
-            ChargingPool.parse(from: dict, value: &pool, errorResponse: &err)
-        }) {
+        if !json.parseOptionalArray("chargingPools",
+            into:           &chargingPools,
+            errorResponse:  &errorResponse,
+            using:          { dict, pool, err in ChargingPool.parse(from: dict, value: &pool, errorResponse: &err)}
+        ) {
             return false
         }
 
         var chargingStations: [ChargingStation]?
-        if !json.parseOptionalArray("chargingStations", into: &chargingStations, errorResponse: &errorResponse, using: { dict, station, err in
-            ChargingStation.parse(from: dict, value: &station, errorResponse: &err)
-        }) {
+        if !json.parseOptionalArray(
+            "chargingStations",
+            into:           &chargingStations,
+            errorResponse:  &errorResponse,
+            using:          { dict, station, err in ChargingStation.parse(from: dict, value: &station, errorResponse: &err)}
+        ) {
             return false
         }
 
         var chargingTariffs: [ChargingTariff]?
-        if !json.parseOptionalArray("chargingTariffs", into: &chargingTariffs, errorResponse: &errorResponse, using: { dict, tariff, err in
-            ChargingTariff.parse(from: dict, value: &tariff, errorResponse: &err)
-        }) {
+        if !json.parseOptionalArray(
+            "chargingTariffs",
+            into:           &chargingTariffs,
+            errorResponse:  &errorResponse,
+            using:          { dict, tariff, err in ChargingTariff.parse(from: dict, value: &tariff, errorResponse: &err)}
+        ) {
             return false
         }
 
         var energyMeters: [EnergyMeter]?
-        if !json.parseOptionalArray("energyMeters", into: &energyMeters, errorResponse: &errorResponse, using: { dict, meter, err in
-            EnergyMeter.parse(from: dict, value: &meter, errorResponse: &err)
-        }) {
+        if !json.parseOptionalArray(
+            "energyMeters",
+            into:           &energyMeters,
+            errorResponse:  &errorResponse,
+            using:          { dict, meter, err in EnergyMeter.parse(from: dict, value: &meter, errorResponse: &err)}
+        ) {
             return false
         }
 
-        var sessions: [ChargingSession] = []
-        var error: String?
-        guard json.parseMandatoryArray(
+        var chargingSessions: [ChargingSession]? = []
+        if !json.parseOptionalArray(
             "chargingSessions",
-            into:          &sessions,
-            errorResponse: &error,
-            using: { dict, session, err in
-                ChargingSession.parse(from: dict, value: &session, errorResponse: &err)
-            }
-        ) else {
-            errorResponse = error
+            into:           &chargingSessions,
+            errorResponse:  &errorResponse,
+            using:          { dict, session, err in ChargingSession.parse(from: dict, value: &session, errorResponse: &err)}
+        ) {
             return false
         }
 
         var publicKeys: [PublicKey]?
-        if !json.parseOptionalArray("publicKeys", into: &publicKeys, errorResponse: &errorResponse, using: { dict, key, err in
-            PublicKey.parse(from: dict, value: &key, errorResponse: &err)
-        }) {
+        if !json.parseOptionalArray(
+            "publicKeys",
+            into:           &publicKeys,
+            errorResponse:  &errorResponse,
+            using:          { dict, key, err in PublicKey.parse(from: dict, value: &key, errorResponse: &err)}
+        ) {
             return false
         }
 
         var signatures: [Signature]?
-        if !json.parseOptionalArray("signatures", into: &signatures, errorResponse: &errorResponse, using: { dict, sig, err in
-            Signature.parse(from: dict, value: &sig, errorResponse: &err)
-        }) {
+        if !json.parseOptionalArray("signatures",
+            into:           &signatures,
+            errorResponse:  &errorResponse,
+            using:          { dict, sig, err in Signature.parse(from: dict, value: &sig, errorResponse: &err)}
+        ) {
             return false
         }
 
@@ -233,7 +249,7 @@ class ChargeTransparencyRecord: Identifiable,
                     chargingStations:          chargingStations,
                     chargingTariffs:           chargingTariffs,
                     energyMeters:              energyMeters,
-                    chargingSessions:          sessions,
+                    chargingSessions:          chargingSessions,
                     publicKeys:                publicKeys,
                     signatures:                signatures
                 )

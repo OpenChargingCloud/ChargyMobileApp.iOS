@@ -75,6 +75,13 @@ struct ChargeTransparencyDataView: View {
 
                             Text(session.formattedTimeRange)
                             
+                            if let evseId = session.evseId {
+                                Text("EVSE Id: \(evseId)")
+                            }
+                            else if let stationId = session.chargingStationId {
+                                Text("Station Id: \(stationId)")
+                            }
+
                             if let energy = session.energy {
                                 Text(String(format: "Energie: %.2f kWh", energy))
                             }
@@ -158,6 +165,7 @@ extension ChargeTransparencyDataViewModel {
             ChargingSession(
                 id:          "18a7a7f5-1a72-414b-97d1-8b18ffeb9c60",
                 begin:       iso.date(from: "2024-06-30T19:00:00Z")!,
+                evseId:      "DE*GEF*E12345678*1",
                 energy:      23.52,
                 signatures:  [
                                  Signature(
@@ -172,6 +180,7 @@ extension ChargeTransparencyDataViewModel {
                 id:          "ae6efcec-1290-4c1a-9dfd-cf3d1431f49b",
                 begin:       iso.date(from: "2025-06-12T19:23:03Z")!,
                 end:         iso.date(from: "2025-06-12T21:42:07Z"),
+                evseId:      "DE*GEF*E12345678*2",
                 energy:      35.2
             ),
         
@@ -179,6 +188,7 @@ extension ChargeTransparencyDataViewModel {
                 id:          "0fcece6e-6898-8768-3598-31f49bcf3d14",
                 begin:       iso.date(from: "2025-06-08T19:23:55Z")!,
                 end:         iso.date(from: "2025-06-10T14:48:03Z"),
+                evseId:      "DE*GEF*E12345678*3",
                 energy:      29.62
             )
             
